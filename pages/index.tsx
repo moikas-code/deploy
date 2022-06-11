@@ -375,6 +375,10 @@ export default function Dragon() {
                 Deploy
               </Button>
             }
+            <p className='mx-auto'>
+              Make sure to check your Gas before you approve to ensure your
+              transaction goes through
+            </p>
           </div>
         </div>
       )}
