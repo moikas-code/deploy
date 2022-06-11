@@ -59,11 +59,6 @@ export default function Dragon() {
   const [show, setShow] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState<boolean>(false);
   const [continuation, setContinuation] = useState<string | string[]>('');
-  const [price, setPrice] = useState<number>(0);
-  const [listNFT, setListNFT] = useState<boolean>(false);
-  const [supply, setSupply] = useState<number>(1);
-  const [lazyMint, setLazyMint] = useState<boolean>(false);
-  const [royalties, setRoyalties] = useState<number>(0);
   const [collections, setCollections] = useState<Array<any>>([]);
 
   const [assetType, setAssetType] = useState<any>('');
@@ -156,7 +151,7 @@ export default function Dragon() {
         }
 
         setCollections(cleanCollections.sort((a, b) => b.total - a.total));
-        setContract({...contract, operators: [`${_blockchain}:${_address}`]});
+
         setComplete(true);
       }
     },
@@ -175,7 +170,16 @@ export default function Dragon() {
           },
         },
       });
-
+    setContract({
+      ...contract,
+      operators: [
+        `${
+          _blockchain === 'POLYGON' || _blockchain === 'ETHEREUM'
+            ? 'ETHEREUM'
+            : _blockchain
+        }:${_address}`,
+      ],
+    });
     return () => {
       setComplete(false);
     };
@@ -224,6 +228,7 @@ export default function Dragon() {
         <h1>Deploy | Tako Labs</h1>
         <hr />
         <p>Deploy Your NFT Contracts with Us ❤</p>
+        <p>We Support: Ethereum, Polygon, and Tezos</p>
         <br />
         Loading
       </div>
@@ -260,6 +265,8 @@ export default function Dragon() {
           <h1>Deploy | Tako Labs</h1>
           <hr />
           <p>Deploy Your NFT Contracts with Us ❤</p>
+          <p>We Support: Ethereum, Polygon, and Tezos</p>
+
           <p>Please Connect to Continue with App</p>
           <Button
             className={'btn btn-outline-dark'}
@@ -357,13 +364,13 @@ export default function Dragon() {
                 }
                 className={`btn-outline-dark`}
                 onClick={async () => {
-                  // TAKO.createCollection(
-                  //   sdk,
-                  //   getDeployRequest(_blockchain as any)
-                  // ).then((res) => {
-                  //   console.log(res);
-                  // });
                   console.log(getDeployRequest(_blockchain as any));
+                  TAKO.createCollection(
+                    sdk,
+                    getDeployRequest(_blockchain as any)
+                  ).then((res) => {
+                    console.log(res);
+                  });
                 }}>
                 Deploy
               </Button>

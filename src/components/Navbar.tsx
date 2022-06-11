@@ -13,9 +13,9 @@ function Navbar() {
   const [address, setAddress] = React.useState('');
   const [status, setStatus] = React.useState('');
   const [err, setErr] = React.useState<any>('');
-  React.useEffect(()=>{
-    setStatus(connection.state.status)
-  },[connection])
+  React.useEffect(() => {
+    setStatus(connection.state.status);
+  }, [connection]);
   return (
     <>
       <style jsx>{`
@@ -52,7 +52,13 @@ function Navbar() {
         {show && (
           <div
             className={`wallet-button-items d-flex flex-column bg-grey position-absolute end-0`}>
-
+            <WalletButtonItem
+              text={`Create`}
+              onPress={() => {
+                router.push('https://mint.takolabs.io');
+                setShow(false);
+              }}
+            />
             <WalletButtonItem
               text={`Disconnect`}
               onPress={() => {
