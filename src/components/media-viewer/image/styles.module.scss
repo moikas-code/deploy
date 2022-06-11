@@ -1,0 +1,29 @@
+@import '/styles/layout.scss';
+.style {
+  height: 100%;
+  max-width: 100%;
+  max-height: 800px;
+  display: block;
+  margin: 0 auto;
+  border: none;
+}
+
+.container {
+  .image {
+    display: block;
+    width: auto;
+
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+
+    @include respond-to('tablet') {
+      max-height: 70vh;
+      height: initial;
+    }
+
+    @include respond-to('desktop') {
+      max-height: 60vh;
+    }
+  }
+}
