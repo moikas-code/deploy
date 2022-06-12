@@ -36,6 +36,7 @@ import {
 } from '@rarible/types';
 import NFTInput from '../src/components/NFTInput';
 import {ConnectOptions} from '../src/views/connect/connect-options';
+import {setDefaultResultOrder} from 'dns/promises';
 type MintFormProps = any;
 interface NFTFormProps extends MintFormProps {
   address: UnionAddress;
@@ -54,13 +55,13 @@ export default function Dragon() {
       : '';
   const _address: string = connection.walletAddress?.split(':')[1];
 
-  const [contractAddress, setContractAddress] = useState<any>({});
+  const [contractAddress, setContractAddress] = useState<any>(null);
   const [complete, setComplete] = useState<boolean>(false);
   const [show, setShow] = useState<boolean>(false);
   const [showOptions, setShowOptions] = useState<boolean>(false);
   const [continuation, setContinuation] = useState<string | string[]>('');
   const [collections, setCollections] = useState<Array<any>>([]);
-
+  const [_error, setError] = useState<any>('');
   const [assetType, setAssetType] = useState<any>('');
   const [contract, setContract] = useState<any>({
     name: '',
@@ -277,7 +278,7 @@ export default function Dragon() {
           </Button>
           <br />
         </div>
-      ) : (
+      ) : !show ? (
         <div className='nft-form w-100 d-flex flex-column justify-content-center mx-auto border border-dark m-5'>
           <div className='d-flex flex-column m-3'>
             <p>Your Network: {_blockchain}</p>
@@ -315,7 +316,7 @@ export default function Dragon() {
                 value={assetType}
                 onChange={(e) => {
                   setAssetType(e);
-                  console.log(e);
+                  // console.log(e);
                 }}
               />
             </div>
@@ -365,12 +366,30 @@ export default function Dragon() {
                 className={`btn-outline-dark`}
                 onClick={async () => {
                   console.log(getDeployRequest(_blockchain as any));
+                  setShow(true);
                   TAKO.createCollection(
                     sdk,
                     getDeployRequest(_blockchain as any)
-                  ).then((res) => {
-                    console.log(res);
-                  });
+                  )
+                    .then((res) => {
+                      console.log(res);
+
+                      if (res.code === 4001) {
+                        setShow(false);
+                        setError('User Cancelled Transaction');
+                      } else if (res.code === parseInt('-32603')) {
+                        setShow(false);
+                        setError('Transaction Underpriced, Please Try Again and Check your Gas');
+                      } else {
+                        setContractAddress(res);
+                      }
+                    })
+                    .catch((err) => {
+                      console.log(err, err.code == 4001);
+                      if (err.code == 4001) {
+                        setShow(false);
+                      }
+                    });
                 }}>
                 Deploy
               </Button>
@@ -379,7 +398,50 @@ export default function Dragon() {
               Make sure to check your Gas before you approve to ensure your
               transaction goes through
             </p>
+            <br />
+            <p>{_error}</p>
           </div>
+        </div>
+      ) : (
+        <div className='h-100 w-100 d-flex flex-column justify-content-center align-items-center'>
+          <h1>Deploy | Tako Labs</h1>
+          <hr />
+          <p>Deploy Your NFT Contracts with Us ❤</p>
+          <p>We Support: Ethereum, Polygon, and Tezos</p>
+
+          {contractAddress === null ? (
+            <p>Deploying</p>
+          ) : (
+            <p>
+              Your Contract Address:{' '}
+              <a
+                target={'_blank'}
+                href={`https://rarible.com/collection/${
+                  contractAddress.split(':')[0] === 'ETHEREUM'
+                    ? ''
+                    : contractAddress.split(':')[0].toLowerCase()
+                }/${contractAddress.split(':')[1]}/items`}>
+                {contractAddress.split(':')[1]}
+              </a>
+            </p>
+          )}
+          <Button
+            disabled={false}
+            className={`btn-outline-dark`}
+            onClick={async () => {
+              setShow(false);
+              setError('');
+              setContract({
+                name: '',
+                symbol: '',
+                baseURI: '',
+                contractURI: '',
+                isUserToken: false,
+                operators: [],
+              });
+            }}>
+            Close
+          </Button>
         </div>
       )}
     </>

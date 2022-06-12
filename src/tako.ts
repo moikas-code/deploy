@@ -723,9 +723,11 @@ const TAKO = {
     try {
       if (!sdk) return;
       const result = await sdk.nft.createCollection(collectionRequest);
-      return result;
+      await result.tx.wait();
+      return result.address;
     } catch (error) {
       console.log(error);
+      return error
     }
   },
   mint: async ({
