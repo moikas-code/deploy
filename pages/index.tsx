@@ -307,7 +307,10 @@ export default function Dragon() {
                         {label: 'ERC1155 (Multiples)', value: 'ERC1155'},
                       ];
                     case 'TEZOS':
-                      return [{label: 'NFT', value: 'NFT'}, ,];
+                      return [
+                        {label: 'NFT (Singles)', value: 'NFT'},
+                        {label: 'MT (Multiples)', value: 'MT'},
+                      ];
 
                     default:
                       break;
@@ -379,7 +382,9 @@ export default function Dragon() {
                         setError('User Cancelled Transaction');
                       } else if (res.code === parseInt('-32603')) {
                         setShow(false);
-                        setError('Transaction Underpriced, Please Try Again and Check your Gas');
+                        setError(
+                          'Transaction Underpriced, Please Try Again and Check your Gas'
+                        );
                       } else {
                         setContractAddress(res);
                       }
