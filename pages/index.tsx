@@ -186,7 +186,7 @@ export default function Dragon() {
     };
   }, [_address, _blockchain]);
 
-  function getDeployRequest(_blockchain: string) {
+  async function getDeployRequest(_blockchain: string) {
     switch (_blockchain) {
       case 'POLYGON':
       case 'ETHEREUM':
@@ -201,6 +201,38 @@ export default function Dragon() {
               contractURI: contract.contractURI,
               isUserToken: contract.isUserToken,
               operators: contract.operators,
+            },
+          },
+        } as any;
+      case 'SOLANA':
+        const json = JSON.stringify({
+          name: contract.name,
+          symbol: contract.symbol,
+          description: 'Deployed with https://deploy.takolabs.io',
+          image: '',
+          seller_fee_basis_points: 10,
+          properties: {
+            category: 'image',
+            files: [],
+            creators: [
+              {
+                address: _address,
+                share: 100,
+                verified: true,
+              },
+            ],
+          },
+        });
+        const blob = await nft.storeFileAsBlob(json);
+        // console.log(json, 'https://ipfs.io/ipfs/' + blob);
+        // const str = JSON.stringify(obj);
+
+        return {
+          blockchain: _blockchain as any,
+          asset: {
+            assetType: assetType.value,
+            arguments: {
+              metadataURI: 'https://ipfs.io/ipfs/' + blob,
             },
           },
         } as any;
@@ -311,7 +343,8 @@ export default function Dragon() {
                         {label: 'NFT (Singles)', value: 'NFT'},
                         {label: 'MT (Multiples)', value: 'MT'},
                       ];
-
+                    case 'SOLANA':
+                      return [{label: 'NFT (Multiples)', value: 'SOLANA-NFT'}];
                     default:
                       break;
                   }
@@ -370,31 +403,33 @@ export default function Dragon() {
                 onClick={async () => {
                   console.log(getDeployRequest(_blockchain as any));
                   setShow(true);
-                  TAKO.createCollection(
-                    sdk,
-                    getDeployRequest(_blockchain as any)
-                  )
-                    .then((res) => {
-                      console.log(res);
+                  await getDeployRequest(_blockchain as any).then(
+                    async (deploy_req) => {
+                      await TAKO.createCollection(sdk, deploy_req)
+                        .then((res) => {
+                          console.log(res);
 
-                      if (res.code === 4001) {
-                        setShow(false);
-                        setError('User Cancelled Transaction');
-                      } else if (res.code === parseInt('-32603')) {
-                        setShow(false);
-                        setError(
-                          'Transaction Underpriced, Please Try Again and Check your Gas'
-                        );
-                      } else {
-                        setContractAddress(res);
-                      }
-                    })
-                    .catch((err) => {
-                      console.log(err, err.code == 4001);
-                      if (err.code == 4001) {
-                        setShow(false);
-                      }
-                    });
+                          if (res.code === 4001) {
+                            setShow(false);
+                            setError('User Cancelled Transaction');
+                          } else if (res.code === parseInt('-32603')) {
+                            setShow(false);
+                            setError(
+                              'Transaction Underpriced, Please Try Again and Check your Gas'
+                            );
+                          } else {
+                            setContractAddress(res);
+                            console.log(res);
+                          }
+                        })
+                        .catch((err) => {
+                          console.log(err, err.code == 4001);
+                          if (err.code == 4001) {
+                            setShow(false);
+                          }
+                        });
+                    }
+                  );
                 }}>
                 Deploy
               </Button>
@@ -419,14 +454,8 @@ export default function Dragon() {
           ) : (
             <p>
               Your Contract Address:{' '}
-              <a
-                target={'_blank'}
-                href={`https://rarible.com/collection/${
-                  contractAddress.split(':')[0] === 'ETHEREUM'
-                    ? ''
-                    : contractAddress.split(':')[0].toLowerCase()
-                }/${contractAddress.split(':')[1]}/items`}>
-                {contractAddress.split(':')[1]}
+              <a target={'_blank'} href={``}>
+                {/* {contractAddress} */}
               </a>
             </p>
           )}
